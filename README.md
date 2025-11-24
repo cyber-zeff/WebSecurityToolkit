@@ -23,7 +23,7 @@ Make sure Python **3.10+** is installed.
 
 ```bash
 pip install fastapi uvicorn requests PyQt5
-
+```
 
 ## Run Commands
 (open two different terminals)
@@ -31,7 +31,9 @@ pip install fastapi uvicorn requests PyQt5
 ```cmd
 cd backend
 uvicorn main:app --reload
+```
 
 ```cmd
 cd gui
 python app.py
+```
