@@ -1,12 +1,13 @@
 
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 import re
 
 app = FastAPI()
 
 # SQLi detection route
-class SQLInput(BaseModel):
+class SQLInput(BaseModel): 
     text: str
 
 @app.post("/detect_sqli")
@@ -15,7 +16,7 @@ def detect_sqli(data: SQLInput):
         r"(--|#|;)",              # comment operators
         r"(\bOR\b|\bAND\b)",  # logical operators
         r"'[^']*'|\"[^\"]*\"",       # quotes
-        r"(UNION|SELECT|INSERT|DELETE|DROP|UPDATE)"  # keywords
+        r"(UNION|SELECT|INSERT|DELETE|DROP|UPDATE)"  # keywords -- sql queries
     ]
     for p in patterns:
         if re.search(p, data.text, re.IGNORECASE):
@@ -39,9 +40,8 @@ def check_password(data: PasswordModel):
     levels = {1:"Very Weak",2:"Weak",3:"Medium",4:"Strong",5:"Very Strong"}
     return {"strength": levels.get(score, "Very Weak"), "score": score}
 
-# Encryption/Decryption route
-from typing import Optional
 
+# Encryption/Decryption route
 class CipherInput(BaseModel):
     text: str
     key: Optional[str] = None

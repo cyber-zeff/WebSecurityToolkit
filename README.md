@@ -2,7 +2,7 @@
 
 A combined **SQL Injection Detector** + **Password Strength Checker** built using:
 
-- ⚡ **FastAPI** (backend)
+- ⚡ **FastAPI** (backend) -- server linkage
 - 🖥️ **PyQt5** (GUI frontend)
 - 🐍 **Python 3.10+**
 
