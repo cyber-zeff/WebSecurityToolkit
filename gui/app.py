@@ -1,7 +1,7 @@
 
 import sys
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QStackedWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QStackedWidget, QComboBox, QRadioButton, QButtonGroup, QTextEdit
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
@@ -47,14 +47,17 @@ class RedesignedApp(QWidget):
         self.welcome_page = QWidget()
         self.sqli_page = QWidget()
         self.password_page = QWidget()
+        self.encryption_page = QWidget()
 
         self.stacked_widget.addWidget(self.welcome_page)
         self.stacked_widget.addWidget(self.sqli_page)
         self.stacked_widget.addWidget(self.password_page)
+        self.stacked_widget.addWidget(self.encryption_page)
 
         self.init_welcome_page()
         self.init_sqli_page()
         self.init_password_page()
+        self.init_encryption_page()
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stacked_widget)
@@ -113,6 +116,9 @@ class RedesignedApp(QWidget):
         password_button = QPushButton("Password Strength Checker")
         password_button.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.password_page))
 
+        encryption_button = QPushButton("Encryption Tool")
+        encryption_button.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.encryption_page))
+
         layout.addWidget(title)
         layout.addSpacing(50)
         
@@ -121,6 +127,8 @@ class RedesignedApp(QWidget):
         button_layout.addWidget(sqli_button)
         button_layout.addSpacing(20)
         button_layout.addWidget(password_button)
+        button_layout.addSpacing(20)
+        button_layout.addWidget(encryption_button)
 
         layout.addLayout(button_layout)
         self.welcome_page.setLayout(layout)
@@ -177,6 +185,137 @@ class RedesignedApp(QWidget):
             self.password_result.setText(f"Strength: {data['strength']}")
         except requests.exceptions.RequestException:
             self.password_result.setText("Error: Connection to the backend server failed. Please ensure the server is running.")
+
+    def init_encryption_page(self):
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)
+
+        title = QLabel("Encryption/Decryption Tool")
+        title.setFont(QFont("Arial", 24, QFont.Bold))
+        title.setAlignment(Qt.AlignCenter)
+
+        # Algorithm Selection
+        self.algo_combo = QComboBox()
+        self.algo_combo.addItems(["Caesar", "Vigenere"])
+        self.algo_combo.setStyleSheet("""
+            QComboBox {
+                padding: 10px;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+                font-size: 16px;
+                background-color: #34495e;
+                color: #ecf0f1;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+        """)
+        
+        # Mode Selection
+        mode_layout = QHBoxLayout()
+        self.encrypt_radio = QRadioButton("Encrypt")
+        self.decrypt_radio = QRadioButton("Decrypt")
+        self.encrypt_radio.setChecked(True)
+        self.encrypt_radio.setStyleSheet("font-size: 16px;")
+        self.decrypt_radio.setStyleSheet("font-size: 16px;")
+        
+        self.mode_group = QButtonGroup()
+        self.mode_group.addButton(self.encrypt_radio)
+        self.mode_group.addButton(self.decrypt_radio)
+        
+        mode_layout.addWidget(self.encrypt_radio)
+        mode_layout.addWidget(self.decrypt_radio)
+        mode_layout.setAlignment(Qt.AlignCenter)
+
+        # Inputs
+        self.cipher_input = QTextEdit()
+        self.cipher_input.setPlaceholderText("Enter text...")
+        self.cipher_input.setFixedHeight(100)
+        self.cipher_input.setStyleSheet("""
+            QTextEdit {
+                padding: 10px;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+                font-size: 16px;
+                background-color: #34495e;
+                color: #ecf0f1;
+            }
+        """)
+
+        self.key_input = QLineEdit()
+        self.key_input.setPlaceholderText("Enter Shift (int) or Key (str)")
+
+        self.cipher_result = QTextEdit()
+        self.cipher_result.setReadOnly(True)
+        self.cipher_result.setPlaceholderText("Result will appear here...")
+        self.cipher_result.setFixedHeight(100)
+        self.cipher_result.setStyleSheet("""
+            QTextEdit {
+                padding: 10px;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+                font-size: 16px;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+            }
+        """)
+
+        run_button = QPushButton("Execute")
+        run_button.clicked.connect(self.run_cipher)
+
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.welcome_page))
+
+        # Add to layout
+        layout.addWidget(title)
+        layout.addSpacing(30)
+        layout.addWidget(QLabel("Algorithm:"))
+        layout.addWidget(self.algo_combo)
+        layout.addSpacing(10)
+        layout.addLayout(mode_layout)
+        layout.addSpacing(10)
+        layout.addWidget(self.cipher_input)
+        layout.addSpacing(10)
+        layout.addWidget(self.key_input)
+        layout.addSpacing(20)
+        layout.addWidget(run_button)
+        layout.addSpacing(20)
+        layout.addWidget(self.cipher_result)
+        layout.addStretch()
+        layout.addWidget(back_button)
+
+        self.encryption_page.setLayout(layout)
+
+    def run_cipher(self):
+        text = self.cipher_input.toPlainText()
+        key_val = self.key_input.text()
+        algo = self.algo_combo.currentText()
+        mode = "encrypt" if self.encrypt_radio.isChecked() else "decrypt"
+        
+        payload = {
+            "text": text,
+            "algorithm": algo,
+            "mode": mode
+        }
+
+        if algo == "Caesar":
+            if not key_val.lstrip('-').isdigit():
+                self.cipher_result.setPlainText("Error: Shift must be an integer for Caesar cipher.")
+                return
+            payload["shift"] = int(key_val)
+        else:
+            payload["key"] = key_val
+
+        try:
+            r = requests.post(f"{API_BASE}/cipher", json=payload)
+            r.raise_for_status()
+            data = r.json()
+            if "error" in data:
+                 self.cipher_result.setPlainText(f"Error: {data['error']}")
+            else:
+                 self.cipher_result.setPlainText(data["result"])
+        except requests.exceptions.RequestException as e:
+            self.cipher_result.setPlainText(f"Error: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
