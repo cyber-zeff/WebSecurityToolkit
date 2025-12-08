@@ -62,6 +62,7 @@ class RedesignedApp(QWidget):
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stacked_widget)
         self.setLayout(main_layout)
+    
     def init_password_page(self):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
