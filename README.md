@@ -12,6 +12,7 @@ A combined **SQL Injection Detector** + **Password Strength Checker** built usin
 
 - 🔍 Detects **SQL injection patterns**
 - 🔐 Evaluates **password strength**
+- 🔑 **Encryption/Decryption Tool** (Vigenère & Caesar Ciphers)
 - 🧩 GUI + REST API backend
 - 🧪 Easy to run and extend
 
